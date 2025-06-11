@@ -7,8 +7,8 @@ interface UserState {
   name: string;
   avatarUrl?: string;
   userType: string; // 'consumer' | 'provider' | 'admin'
-  fcm_token?: string; // Optional field for FCM token
   location?: string; // Optional field for user location
+  platform_tokens?: number;
 }
 
 const initialState: UserState = {
@@ -17,22 +17,22 @@ const initialState: UserState = {
   name: 'User',
   avatarUrl: '',
   userType: '', 
-  fcm_token: undefined, // Optional field for FCM token
   location: undefined, // Optional field for user location
+  platform_tokens: 0,
 };
 
 const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUser(state, action: PayloadAction<{ name: string; avatarUrl?: string ,uid: string, userType: string, fcm_token?: string, location?: string }>) {
+    setUser(state, action: PayloadAction<{ name: string; avatarUrl?: string ,uid: string, userType: string, location?: string, platform_tokens?: number }>) {
       state.uid = action.payload.uid; 
       state.name = action.payload.name;
       state.avatarUrl = action.payload.avatarUrl;
       state.isAuthenticated = true;
       state.userType = action.payload.userType; 
-      state.fcm_token = action.payload.fcm_token; // Optional field for FCM token
       state.location = action.payload.location; // Optional field for user location
+      state.platform_tokens = action.payload.platform_tokens; 
     },
     logout(state) {
       state.uid = '';
@@ -40,7 +40,8 @@ const userSlice = createSlice({
       state.name = '';
       state.avatarUrl = '';
       state.userType = ''; 
-      state.fcm_token = undefined; // Reset FCM token on logout
+      state.location = undefined;
+      state.platform_tokens = 0;
     },
   },
 });

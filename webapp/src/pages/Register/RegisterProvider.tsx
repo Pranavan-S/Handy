@@ -174,7 +174,7 @@ export default function RegisterProvider() {
       average_rating: 0,
       review_count: 0,
       bio,
-      fcm_token: "",
+      platform_tokens: 0,
     };
 
     console.log("Submitting provider registration:", payload);
@@ -188,8 +188,8 @@ export default function RegisterProvider() {
       name: name || user.displayName || user.email || "",
       avatarUrl: avatarUrl || "",
       userType: "provider",
-      fcm_token: "",
       location: location || "",
+      platform_tokens: 0,
     }));
 
     alert("Registration successful! You can now access your dashboard.");
@@ -229,8 +229,8 @@ export default function RegisterProvider() {
           name: user.displayName || user.email || "",
           avatarUrl: user.photoURL || "",
           userType: "provider",
-          fcm_token: "",
           location: "",
+          platform_tokens: 0,
         }));
         alert("Google sign-in successful! You can now access your dashboard.");
         navigate("/dashboard");
@@ -289,14 +289,16 @@ export default function RegisterProvider() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email || username, password);
       const user = userCredential.user;
+      const res = await apiService.get(`/users/user_info/${user.uid}`);
+      const userData = res.data;
 
       dispatch(setUser({
         uid: user.uid,
         name: user.displayName || user.email || "",
         avatarUrl: user.photoURL || "",
         userType: "provider",
-        fcm_token: "",
         location: "",
+        platform_tokens: userData.platform_tokens || 0,
       }));
       alert(`Login successful as ${user.email}`);
       navigate("/dashboard");

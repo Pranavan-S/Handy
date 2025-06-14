@@ -7,20 +7,19 @@ interface UserState {
   name: string;
   avatarUrl?: string;
   userType: string;
-  fcm_token?: string;
   location?: string;
   services_array?: Array<string>;
+  platform_tokens?: number;
 }
 
 const initialState: UserState = {
   uid: '',
   isAuthenticated: false,
   name: '',
-  avatarUrl: '',
   userType: '',
-  fcm_token: undefined,
   location: undefined,
   services_array: [],
+  platform_tokens: 0,
 };
 
 const userSlice = createSlice({
@@ -32,18 +31,18 @@ const userSlice = createSlice({
       avatarUrl?: string; 
       uid: string; 
       userType: string; 
-      fcm_token?: string; 
       location?: string; 
-      services_array?: Array<string> 
+      services_array?: Array<string>;
+      platform_tokens?: number
     }>) {
       state.uid = action.payload.uid;
       state.name = action.payload.name;
       state.avatarUrl = action.payload.avatarUrl;
       state.isAuthenticated = true;
       state.userType = action.payload.userType;
-      state.fcm_token = action.payload.fcm_token;
       state.location = action.payload.location;
       state.services_array = action.payload.services_array;
+      state.platform_tokens = action.payload.platform_tokens; 
     },
     logout(state) {
       state.uid = '';
@@ -51,9 +50,9 @@ const userSlice = createSlice({
       state.name = '';
       state.avatarUrl = '';
       state.userType = '';
-      state.fcm_token = undefined;
       state.location = undefined;
       state.services_array = [];
+      state.platform_tokens = 0;
     },
   },
 });

@@ -37,10 +37,10 @@ function GoogleFavicon(props: any) {
   return (
     <SvgIcon {...props} viewBox="0 0 48 48" sx={{ width: 24, height: 24 }}>
       <g>
-        <path fill="#4285F4" d="M43.6 20.5h-1.9V20H24v8h11.3c-1.6 4.3-5.7 7.5-10.3 7.5-6.1 0-11-4.9-11-11s4.9-11 11-11c2.6 0 5 .9 6.9 2.4l6.1-6.1C34.2 7.6 29.4 5.5 24 5.5 13.8 5.5 5.5 13.8 5.5 24S13.8 42.5 24 42.5c9.9 0 18-8.1 18-18 0-1.2-.1-2.1-.4-3z"/>
-        <path fill="#34A853" d="M6.3 14.1l6.6 4.8C14.5 16.1 18.8 13 24 13c2.6 0 5 .9 6.9 2.4l6.1-6.1C34.2 7.6 29.4 5.5 24 5.5c-6.6 0-12.2 3.4-15.7 8.6z"/>
-        <path fill="#FBBC05" d="M24 42.5c5.4 0 10.2-1.8 13.9-4.9l-6.4-5.2c-2 1.4-4.5 2.2-7.5 2.2-4.6 0-8.7-3.2-10.3-7.5l-6.6 5.1C8.1 38.6 15.4 42.5 24 42.5z"/>
-        <path fill="#EA4335" d="M43.6 20.5h-1.9V20H24v8h11.3c-0.7 2-2.1 3.7-3.9 4.9l6.4 5.2c-0.6 0.6 6.2-4.5 6.2-13.1 0-1.2-.1-2.1-.4-3z"/>
+        <path fill="#4285F4" d="M43.6 20.5h-1.9V20H24v8h11.3c-1.6 4.3-5.7 7.5-10.3 7.5-6.1 0-11-4.9-11-11s4.9-11 11-11c2.6 0 5 .9 6.9 2.4l6.1-6.1C34.2 7.6 29.4 5.5 24 5.5 13.8 5.5 5.5 13.8 5.5 24S13.8 42.5 24 42.5c9.9 0 18-8.1 18-18 0-1.2-.1-2.1-.4-3z" />
+        <path fill="#34A853" d="M6.3 14.1l6.6 4.8C14.5 16.1 18.8 13 24 13c2.6 0 5 .9 6.9 2.4l6.1-6.1C34.2 7.6 29.4 5.5 24 5.5c-6.6 0-12.2 3.4-15.7 8.6z" />
+        <path fill="#FBBC05" d="M24 42.5c5.4 0 10.2-1.8 13.9-4.9l-6.4-5.2c-2 1.4-4.5 2.2-7.5 2.2-4.6 0-8.7-3.2-10.3-7.5l-6.6 5.1C8.1 38.6 15.4 42.5 24 42.5z" />
+        <path fill="#EA4335" d="M43.6 20.5h-1.9V20H24v8h11.3c-0.7 2-2.1 3.7-3.9 4.9l6.4 5.2c-0.6 0.6 6.2-4.5 6.2-13.1 0-1.2-.1-2.1-.4-3z" />
       </g>
     </SvgIcon>
   );
@@ -152,58 +152,58 @@ export default function RegisterProvider() {
 
   // Handles submitting extra fields after Google or email registration
   const handleExtraFieldsSubmit = async (avatarUrl: string, userEmail: string) => {
-  setRegisterError(null);
-  setRegisterLoading(true);
-  try {
-    const user = auth.currentUser;
-    if (!user) {
-      setRegisterError("No authenticated user found.");
-      return;
+    setRegisterError(null);
+    setRegisterLoading(true);
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        setRegisterError("No authenticated user found.");
+        return;
+      }
+
+      const payload = {
+        user_id: user.uid,
+        name: name || user.displayName || "",
+        email: userEmail,
+        user_type: "provider",
+        phone,
+        location,
+        avatar: avatarUrl || "",
+        services_array: servicesArray,
+        availability: "available",
+        average_rating: 0,
+        review_count: 0,
+        bio,
+        platform_tokens: 30,
+      };
+
+      console.log("Submitting provider registration:", payload);
+
+      await apiService.post("/providers/registerProvider", payload);
+
+      alert("Registration successful! You can now access your dashboard.");
+
+      dispatch(setUser({
+        uid: user.uid,
+        name: name || user.displayName || user.email || "",
+        avatarUrl: avatarUrl || "",
+        userType: "provider",
+        location: location || "",
+        platform_tokens: 30,
+      }));
+
+      alert("Registration successful! You can now access your dashboard.");
+      navigate("/dashboard");
+    } catch (error: any) {
+      if (error.response && error.response.data && error.response.data.error) {
+        setRegisterError(error.response.data.error);
+      } else {
+        setRegisterError(error.message || "Registration failed.");
+      }
+    } finally {
+      setRegisterLoading(false); // <-- Always reset loading state
     }
-
-    const payload = {
-      user_id: user.uid,
-      name: name || user.displayName || "",
-      email: userEmail,
-      user_type: "provider",
-      phone,
-      location,
-      avatar: avatarUrl || "",
-      services_array: servicesArray,
-      availability: "available",
-      average_rating: 0,
-      review_count: 0,
-      bio,
-      fcm_token: "",
-    };
-
-    console.log("Submitting provider registration:", payload);
-
-    await apiService.post("/providers/registerProvider", payload);
-
-    alert("Registration successful! You can now access your dashboard.");
-
-    dispatch(setUser({
-      uid: user.uid,
-      name: name || user.displayName || user.email || "",
-      avatarUrl: avatarUrl || "",
-      userType: "provider",
-      fcm_token: "",
-      location: location || "",
-    }));
-
-    alert("Registration successful! You can now access your dashboard.");
-    navigate("/dashboard");
-  } catch (error: any) {
-    if (error.response && error.response.data && error.response.data.error) {
-      setRegisterError(error.response.data.error);
-    } else {
-      setRegisterError(error.message || "Registration failed.");
-    }
-  } finally {
-    setRegisterLoading(false); // <-- Always reset loading state
-  }
-};
+  };
   // Google OAuth handler (Firebase implementation)
   const [pendingGoogleUser, setPendingGoogleUser] = useState<{ avatarUrl: string, email: string } | null>(null);
   const handleGoogleSignIn = async () => {
@@ -229,14 +229,18 @@ export default function RegisterProvider() {
         const userInstanceData = userInstanceCallResponse.data
         const servicesArray = userInstanceData.services_array;
 
+        if (userInstanceCallResponse.status !== 200) {
+          throw new Error("Failed to fetch user instance data.");
+        }
+
         dispatch(setUser({
           uid: user.uid,
           name: user.displayName || user.email || "",
           avatarUrl: user.photoURL || "",
           userType: "provider",
-          fcm_token: "",
           location: "",
           services_array: servicesArray,
+          platform_tokens: userInstanceData.platform_tokens,
         }));
         alert("Google sign-in successful! You can now access your dashboard.");
         navigate("/dashboard");
@@ -299,15 +303,15 @@ export default function RegisterProvider() {
       const userInstanceCallResponse = await apiService.get(`users/user_info/${user.uid}`);
       const userInstanceData = userInstanceCallResponse.data
       const servicesArray = userInstanceData.services_array;
-    
+
       dispatch(setUser({
         uid: user.uid,
         name: user.displayName || user.email || "",
         avatarUrl: user.photoURL || "",
         userType: "provider",
-        fcm_token: "",
         location: "",
         services_array: servicesArray,
+        platform_tokens: userInstanceData.platform_tokens,
       }));
       alert(`Login successful as ${user.email}`);
       navigate("/dashboard");

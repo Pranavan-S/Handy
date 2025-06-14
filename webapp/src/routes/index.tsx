@@ -15,6 +15,7 @@ import ChatList from "@pages/Chats/ChatList";
 import ChatRoom from "@pages/Chats/ChatRoom";
 import Splash from "@pages/WelcomePage";
 import CreateOffer from "@pages/CreateOffer";
+import TokenPurchase from "@pages/TokenPurchase";
 import { useAppSelector } from "@store/hooks";
 
 // Protected Route Component
@@ -89,6 +90,7 @@ export const createAppRouter = (mainLayoutProps: any) =>
           path: "chats/:chatId",
           element: <ChatRoom />,
         },
+        { path: "purchase", element: <TokenPurchase /> },
       ],
     },
     {

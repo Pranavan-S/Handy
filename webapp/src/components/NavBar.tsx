@@ -102,7 +102,7 @@ const NavBar: React.FC<NavBarProps> = ({ userName, avatarUrl, themeMode, onToggl
             Handy
           </Typography>
         </Box>
-
+        
         {/* Navigation Links */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 2 }}>
           <IconButton color="inherit" onClick={() => navigate("/dashboard/providers")} title="Providers">
@@ -112,45 +112,45 @@ const NavBar: React.FC<NavBarProps> = ({ userName, avatarUrl, themeMode, onToggl
             <WorkIcon />
           </IconButton>
         </Box>
-
+        
         <Box sx={{ flexGrow: 1 }} />
-
+        
         {/* Token button with number of possessed tokens */}
-        <IconButton color="inherit" onClick={() => navigate("/dashboard/purchase")} title="Tokens">
+        <IconButton color="inherit" onClick={() => navigate("/dashboard/tokens")} title="Tokens">
           <Badge badgeContent={user.platform_tokens || 0} color="secondary">
             <TokenRoundedIcon />
           </Badge>
         </IconButton>
-
+        
         {/* Theme Switch Icon */}
         <IconButton onClick={onToggleTheme} color="inherit" sx={{ ml: 1 }} aria-label="toggle theme">
           {themeMode === "dark" ? <WbSunnyIcon /> : <NightlightRoundIcon />}
         </IconButton>
-
+        
         {/* Messages */}
         <IconButton color="inherit" sx={{ ml: 1 }} onClick={() => navigate("/dashboard/chats")}>
           <Badge badgeContent={unreadCount} color="error">
             <MailIcon />
           </Badge>
         </IconButton>
-
+        
         {/* Notifications */}
         <IconButton color="inherit" sx={{ ml: 1 }}>
           <Badge badgeContent={0} color="error">
             <NotificationsIcon />
           </Badge>
         </IconButton>
-
+        
         {/* Profile with Popup */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 2 }}>
           <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
-            <Avatar
-              src={avatarUrl}
-              alt={userName}
+            <Avatar 
+              src={avatarUrl} 
+              alt={userName} 
               sx={{ width: 32, height: 32 }}
             />
           </IconButton>
-
+          
           {/* Profile Menu */}
           <Menu
             anchorEl={profileAnchorEl}
@@ -174,9 +174,9 @@ const NavBar: React.FC<NavBarProps> = ({ userName, avatarUrl, themeMode, onToggl
                 {user.userType ? user.userType.charAt(0).toUpperCase() + user.userType.slice(1) : 'User'}
               </Typography>
             </Box>
-
+            
             <Divider />
-
+            
             {/* Menu Items */}
             <MenuItem onClick={handleProfilePage}>
               <ListItemIcon>
@@ -184,16 +184,16 @@ const NavBar: React.FC<NavBarProps> = ({ userName, avatarUrl, themeMode, onToggl
               </ListItemIcon>
               <ListItemText>Profile</ListItemText>
             </MenuItem>
-
+            
             <MenuItem onClick={handleProfileClose}>
               <ListItemIcon>
                 <SettingsIcon fontSize="small" />
               </ListItemIcon>
               <ListItemText>Settings</ListItemText>
             </MenuItem>
-
+            
             <Divider />
-
+            
             <MenuItem onClick={handleLogout}>
               <ListItemIcon>
                 <ExitToAppIcon fontSize="small" />

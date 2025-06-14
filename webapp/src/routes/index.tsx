@@ -15,7 +15,6 @@ import ChatList from "@pages/Chats/ChatList";
 import ChatRoom from "@pages/Chats/ChatRoom";
 import WelcomePage from "@pages/WelcomePage"; // Use your existing WelcomePage
 import CreateOffer from "@pages/CreateOffer";
-import TokenPurchase from "@pages/TokenPurchase";
 
 // Export a function to create the router, allowing injection of props into MainLayout
 export const createAppRouter = (mainLayoutProps: any) =>
@@ -44,7 +43,6 @@ export const createAppRouter = (mainLayoutProps: any) =>
           path: "chats/:chatId",
           element: <ChatRoom />,
         },
-        { path: "purchase", element: <TokenPurchase /> },
       ],
     },
     {

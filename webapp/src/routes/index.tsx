@@ -16,6 +16,7 @@ import CreateOffer from "@pages/CreateOffer";
 import CreateServiceRequest from "@pages/CreateServiceRequest";
 import RegisterProvider from "@pages/Register/RegisterProvider";
 import RegisterConsumer from "@pages/Register/RegisterConsumer";
+import TokenPurchase from "@pages/TokenPurchase";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -90,6 +91,7 @@ export const createAppRouter = (mainLayoutProps: any) =>
         { path: "offers", element: <Offers /> },
         { path: "chats", element: <ChatList /> },
         { path: "chats/:chatId", element: <ChatRoom /> },
+        { path: "purchase", element: <TokenPurchase /> },
       ],
     },
     {

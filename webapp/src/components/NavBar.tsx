@@ -13,8 +13,7 @@ import NightlightRoundIcon from "@mui/icons-material/NightlightRound";
 import { useNavigate } from "react-router-dom";
 import GroupIcon from "@mui/icons-material/Group";
 import WorkIcon from "@mui/icons-material/Work";
-import LocalOfferIcon from "@mui/icons-material/LocalOffer";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import TokenRoundedIcon from '@mui/icons-material/TokenRounded';
 import { useAppSelector } from "@store/hooks";
 import { subscribeToUserChats } from "@utils/chatUtils";
 import {
@@ -99,7 +98,7 @@ const NavBar: React.FC<NavBarProps> = ({ userName, avatarUrl, themeMode, onToggl
             Handy
           </Typography>
         </Box>
-        
+
         {/* Navigation Links */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 2 }}>
           <IconButton color="inherit" onClick={() => navigate("/dashboard/providers")} title="Providers">
@@ -108,45 +107,45 @@ const NavBar: React.FC<NavBarProps> = ({ userName, avatarUrl, themeMode, onToggl
           <IconButton color="inherit" onClick={() => navigate("/dashboard/jobs")} title="My Jobs">
             <WorkIcon />
           </IconButton>
-          <IconButton color="inherit" onClick={() => navigate("/dashboard/offers")} title="Offers">
-            <LocalOfferIcon />
-          </IconButton>
-          <IconButton color="inherit" onClick={() => navigate("/dashboard/register")} title="Register">
-            <PersonAddIcon />
-          </IconButton>
         </Box>
-        
+
         <Box sx={{ flexGrow: 1 }} />
-        
+
+        <IconButton color="inherit" onClick={() => navigate("/dashboard/purchase")} title="Tokens">
+          <Badge badgeContent={user.platform_tokens || 0} color="secondary">
+            <TokenRoundedIcon />
+          </Badge>
+        </IconButton>
+
         {/* Theme Switch Icon */}
-        <IconButton onClick={onToggleTheme} color="inherit" sx={{ mr: 1 }} aria-label="toggle theme">
+        <IconButton onClick={onToggleTheme} color="inherit" sx={{ ml: 1 }} aria-label="toggle theme">
           {themeMode === "dark" ? <WbSunnyIcon /> : <NightlightRoundIcon />}
         </IconButton>
-        
+
         {/* Messages */}
         <IconButton color="inherit" sx={{ ml: 1 }} onClick={() => navigate("/dashboard/chats")}>
           <Badge badgeContent={unreadCount} color="error">
             <MailIcon />
           </Badge>
         </IconButton>
-        
+
         {/* Notifications */}
         <IconButton color="inherit" sx={{ ml: 1 }}>
           <Badge badgeContent={0} color="error">
             <NotificationsIcon />
           </Badge>
         </IconButton>
-        
+
         {/* Profile with Popup */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 2 }}>
           <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
-            <Avatar 
-              src={avatarUrl} 
-              alt={userName} 
+            <Avatar
+              src={avatarUrl}
+              alt={userName}
               sx={{ width: 32, height: 32 }}
             />
           </IconButton>
-          
+
           {/* Profile Menu */}
           <Menu
             anchorEl={profileAnchorEl}
@@ -170,9 +169,9 @@ const NavBar: React.FC<NavBarProps> = ({ userName, avatarUrl, themeMode, onToggl
                 {user.userType ? user.userType.charAt(0).toUpperCase() + user.userType.slice(1) : 'User'}
               </Typography>
             </Box>
-            
+
             <Divider />
-            
+
             {/* Menu Items */}
             <MenuItem onClick={handleProfilePage}>
               <ListItemIcon>
@@ -180,16 +179,16 @@ const NavBar: React.FC<NavBarProps> = ({ userName, avatarUrl, themeMode, onToggl
               </ListItemIcon>
               <ListItemText>Profile</ListItemText>
             </MenuItem>
-            
+
             <MenuItem onClick={handleProfileClose}>
               <ListItemIcon>
                 <SettingsIcon fontSize="small" />
               </ListItemIcon>
               <ListItemText>Settings</ListItemText>
             </MenuItem>
-            
+
             <Divider />
-            
+
             <MenuItem onClick={handleLogout}>
               <ListItemIcon>
                 <ExitToAppIcon fontSize="small" />

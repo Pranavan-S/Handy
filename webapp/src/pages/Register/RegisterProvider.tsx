@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  Box, Typography, Paper, Button, TextField, Divider, MenuItem, Select, InputLabel,
+  Box, Typography, Paper, Button, TextField, MenuItem, Select, InputLabel,
   FormControl, OutlinedInput, Chip, useMediaQuery
 } from "@mui/material";
 import SvgIcon from "@mui/material/SvgIcon";
@@ -48,9 +48,7 @@ function GoogleFavicon(props: any) {
 
 export default function RegisterProvider() {
   const [mode, setMode] = useState<'register' | 'signin'>('register');
-  const [emailMode, setEmailMode] = useState<'none' | 'form'>('none');
   const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
@@ -68,21 +66,6 @@ export default function RegisterProvider() {
   const dispatch = useDispatch();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
-   const [toast, setToast] = useState<{ 
-    open: boolean; 
-    message: string; 
-    severity: "success" | "error" | "warning" | "info" 
-  }>({
-    open: false,
-    message: "",
-    severity: "info"
-  });
-
-  // Show toast function
-  const showToast = (message: string, severity: "success" | "error" | "warning" | "info" = "info") => {
-    setToast({ open: true, message, severity });
-  };
 
   // Show extra fields after Google or email registration
   const showExtraFieldsForm = (avatarUrl: string, userEmail: string) => (
@@ -196,8 +179,6 @@ export default function RegisterProvider() {
 
     await apiService.post("/providers/registerProvider", payload);
 
-    showToast("Registration successful", "success");
-
     dispatch(setUser({
       uid: user.uid,
       name: name || user.displayName || user.email || "",
@@ -253,7 +234,6 @@ export default function RegisterProvider() {
           location: "",
           services_array: servicesArray,
         }));
-        showToast("Google sign-in successful", "success");
         navigate("/dashboard");
       }
     } catch (error: any) {
@@ -287,8 +267,6 @@ export default function RegisterProvider() {
       setShowExtraFields(true);
       setRegisterLoading(false);
 
-      showToast("Please complete your profile", "info");
-
     } catch (error: any) {
       if (error.code === "auth/email-already-in-use") {
         setRegisterError("Email already registered.");
@@ -303,11 +281,11 @@ export default function RegisterProvider() {
 
   // Login handler for Firebase Auth
   const handleLogin = async () => {
-    console.log("Logging in with email:", email || username);
+    console.log("Logging in with email:", email);
     setRegisterError(null);
     setRegisterLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email || username, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
       const userInstanceCallResponse = await apiService.get(`users/user_info/${user.uid}`);
@@ -323,7 +301,6 @@ export default function RegisterProvider() {
         location: "",
         services_array: servicesArray,
       }));
-      showToast("Login successful", "success");
       navigate("/dashboard");
     } catch (error: any) {
       if (error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {

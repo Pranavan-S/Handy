@@ -1,14 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { Box, Typography, Paper, Button, TextField, Divider } from "@mui/material";
+import { useState } from "react";
+import {
+  Box, Typography, Paper, Button, TextField, useMediaQuery
+} from "@mui/material";
 import SvgIcon from "@mui/material/SvgIcon";
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { auth } from "@config/firebase.ts";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup
+} from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-// ...existing imports...
 import { useDispatch } from "react-redux";
 import { setUser } from "../../store/userSlice";
+import { useTheme } from "@mui/material/styles";
 import apiService from "@utils/apiService.tsx";
 
 function GoogleFavicon(props: any) {
@@ -26,32 +33,107 @@ function GoogleFavicon(props: any) {
 
 export default function RegisterConsumer() {
   const [mode, setMode] = useState<'register' | 'signin'>('register');
-  const [emailMode, setEmailMode] = useState<'none' | 'form'>('none');
   const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [registerLoading, setRegisterLoading] = useState(false);
+
+  // Consumer extra fields
+  const [showExtraFields, setShowExtraFields] = useState(false);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-   const [toast, setToast] = useState<{ 
-    open: boolean; 
-    message: string; 
-    severity: "success" | "error" | "warning" | "info" 
-  }>({
-    open: false,
-    message: "",
-    severity: "info"
-  });
+  // Show extra fields after Google or email registration
+  const showExtraFieldsForm = (avatarUrl: string, userEmail: string) => (
+    <Box width="100%" maxWidth={isMobile ? 1 : 400}>
+      <TextField
+        fullWidth
+        label="Full Name"
+        value={name}
+        onChange={e => setName(e.target.value)}
+        sx={{ mb: 2 }}
+      />
+      <TextField
+        fullWidth
+        label="Phone"
+        value={phone}
+        onChange={e => setPhone(e.target.value)}
+        sx={{ mb: 2 }}
+      />
+      {registerError && (
+        <Typography color="error" variant="body2" mb={1}>{registerError}</Typography>
+      )}
+      <Button
+        variant="contained"
+        fullWidth
+        onClick={() => handleExtraFieldsSubmit(avatarUrl, userEmail)}
+        disabled={registerLoading}
+        sx={{
+          background: '#111',
+          color: '#fff',
+          fontWeight: 700,
+          fontSize: '1.1rem',
+          borderRadius: 2,
+          py: 1.2,
+          boxShadow: 'none',
+          '&:hover': { background: '#222' },
+        }}
+      >
+        {registerLoading ? "Submitting..." : "Submit"}
+      </Button>
+    </Box>
+  );
 
-  // Show toast function
-  const showToast = (message: string, severity: "success" | "error" | "warning" | "info" = "info") => {
-    setToast({ open: true, message, severity });
+  // Handles submitting extra fields after Google or email registration
+  const handleExtraFieldsSubmit = async (avatarUrl: string, userEmail: string) => {
+    setRegisterError(null);
+    setRegisterLoading(true);
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        setRegisterError("No authenticated user found.");
+        return;
+      }
+
+      const payload = {
+        user_id: user.uid,
+        name: name || user.displayName || "",
+        email: userEmail,
+        avatar: avatarUrl || "",
+        phone,
+      };
+
+      console.log("Submitting consumer registration:", payload);
+
+      await apiService.post("/consumers/registerConsumer", payload);
+
+      dispatch(setUser({
+        uid: user.uid,
+        name: name || user.displayName || user.email || "",
+        avatarUrl: avatarUrl || "",
+        userType: "consumer",
+      }));
+
+      navigate("/dashboard");
+
+    } catch (error: any) {
+      if (error.response && error.response.data && error.response.data.error) {
+        setRegisterError(error.response.data.error);
+      } else {
+        setRegisterError(error.message || "Registration failed.");
+      }
+    } finally {
+      setRegisterLoading(false);
+    }
   };
-
   // Google OAuth handler (Firebase implementation)
+  const [pendingGoogleUser, setPendingGoogleUser] = useState<{ avatarUrl: string, email: string } | null>(null);
   const handleGoogleSignIn = async () => {
     setRegisterError(null);
     setRegisterLoading(true);
@@ -59,31 +141,25 @@ export default function RegisterConsumer() {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-
       const isNewUser = (result as any)?._tokenResponse?.isNewUser || false;
 
       if (isNewUser) {
-        // Only call registerConsumer if user is new
-        await apiService.post("/consumers/registerConsumer", {
-          user_id: user.uid,
-          name: user.displayName || "New User",
-          email: user.email,
-          avatar: user.photoURL || "",
-          phone: user.phoneNumber || "",
+        // Show extra fields form for new users, pass avatar and email from Google
+        setPendingGoogleUser({
+          avatarUrl: user.photoURL || "",
+          email: user.email || "",
         });
+        setShowExtraFields(true);
+      } else {
+        // Existing user: just login and redirect
+        dispatch(setUser({
+          uid: user.uid,
+          name: user.displayName || user.email || "",
+          avatarUrl: user.photoURL || "",
+          userType: "consumer",
+        }));
+        navigate("/dashboard");
       }
-
-      // Store user in Redux
-      dispatch(setUser({
-        uid: user.uid,
-        name: user.displayName || user.email || "",
-        avatarUrl: user.photoURL || "",
-        userType: "consumer",
-      }));
-
-      showToast("Google sign-in successful", "success");
-      navigate("/");
-      
     } catch (error: any) {
       if (error.response && error.response.data && error.response.data.error) {
         setRegisterError(error.response.data.error);
@@ -94,44 +170,26 @@ export default function RegisterConsumer() {
     setRegisterLoading(false);
   };
 
-  useEffect(() => {
-    if (auth.currentUser) {
-      // If user is already authenticated, redirect to home
-      navigate("/dashboard");
-      dispatch(setUser({
-        uid: auth.currentUser.uid,
-        name: auth.currentUser.displayName || auth.currentUser.email || "",
-        avatarUrl: auth.currentUser.photoURL || "",
-        userType: "consumer",
-      }));
-
-      showToast("Welcome back!", "success");
-    }
-  }, [navigate, dispatch]);
-
   // Registration handler for Firebase Auth + backend
+  const [pendingEmailUser, setPendingEmailUser] = useState<{ avatarUrl: string, email: string } | null>(null);
   const handleRegister = async () => {
     setRegisterError(null);
     setRegisterLoading(true);
     try {
-
       if (!email || !password) {
         setRegisterError("Email and password are required.");
         setRegisterLoading(false);
         return;
       }
-
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
-      await apiService.post("/consumers/registerConsumer", {
-        user_id: user.uid,
-        name: email || "New User",
-        email: user.email,
+      // Show extra fields form, pass avatar and email from Firebase
+      setPendingEmailUser({
+        avatarUrl: user.photoURL || "",
+        email: user.email || "",
       });
-
-      showToast("Registration successful", "success");
-      setMode('signin');
+      setShowExtraFields(true);
+      setRegisterLoading(false);
 
     } catch (error: any) {
       if (error.code === "auth/email-already-in-use") {
@@ -141,28 +199,26 @@ export default function RegisterConsumer() {
       } else {
         setRegisterError(error.message || "Registration failed.");
       }
+      setRegisterLoading(false);
     }
-    setRegisterLoading(false);
   };
 
   // Login handler for Firebase Auth
   const handleLogin = async () => {
+    console.log("Logging in with email:", email);
     setRegisterError(null);
     setRegisterLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email || username, password);
-
-      showToast("Login successful", "success");
-
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
       dispatch(setUser({
-      uid: auth.currentUser?.uid || "",
-      name:  auth.currentUser?.displayName || auth.currentUser?.email || "",
-      avatarUrl: auth.currentUser?.photoURL || "",
-      userType: "consumer", 
+        uid: user.uid,
+        name: user.displayName || user.email || "",
+        avatarUrl: user.photoURL || "",
+        userType: "consumer",
       }));
-      
       navigate("/dashboard");
-      
     } catch (error: any) {
       if (error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
         setRegisterError("Invalid email or password.");
@@ -174,220 +230,161 @@ export default function RegisterConsumer() {
   };
 
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
-      <Paper sx={{ p: 4, minWidth: 370, borderRadius: 4, boxShadow: 3 }}>
+    <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh" sx={{ px: 1 }}>
+      <Paper sx={{
+        p: isMobile ? 2 : 4,
+        width: "100%",
+        maxWidth: isMobile ? 1 : 420,
+        borderRadius: 4,
+        boxShadow: 3,
+      }}>
         <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
-          <Typography variant="h5" fontWeight={700} mb={1}>
-            {mode === 'register' ? 'Create a new account' : 'Sign in to your account'}
+          <Typography variant={isMobile ? "h6" : "h5"} fontWeight={700} mb={1}>
+            {mode === 'register' ? 'Consumer Registration' : 'Consumer Sign In'}
           </Typography>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            {mode === 'register' ? (
-              <></>
-            ) : (
-              <>
-                New to Handy?{' '}
-                <Button variant="text" size="small" onClick={() => setMode('register')} sx={{ textTransform: 'none', fontWeight: 600, p: 0, minWidth: 0 }}>
-                  Create account
+          {showExtraFields && (pendingGoogleUser || pendingEmailUser) ? (
+            showExtraFieldsForm(
+              (pendingGoogleUser || pendingEmailUser)?.avatarUrl || "",
+              (pendingGoogleUser || pendingEmailUser)?.email || ""
+            )
+          ) : mode === 'register' ? (
+            <>
+              <Box width="100%" maxWidth={isMobile ? 1 : 400}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  sx={{ mb: 2 }}
+                  InputProps={{
+                    endAdornment: (
+                      <Button
+                        onClick={() => setShowPassword((show) => !show)}
+                        sx={{ minWidth: 0, p: 0, color: '#888' }}
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      </Button>
+                    ),
+                  }}
+                />
+                {registerError && (
+                  <Typography color="error" variant="body2" mb={1}>{registerError}</Typography>
+                )}
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={handleRegister}
+                  disabled={registerLoading}
+                  sx={{
+                    background: '#111',
+                    color: '#fff',
+                    fontWeight: 700,
+                    fontSize: '1.1rem',
+                    borderRadius: 2,
+                    py: 1.2,
+                    boxShadow: 'none',
+                    '&:hover': { background: '#222' },
+                  }}
+                >
+                  {registerLoading ? "Signing up..." : "Sign up"}
                 </Button>
-              </>
-            )}
-          </Typography>
-          {mode === 'signin' && emailMode === 'none' && (
-            <Box width="100%" maxWidth={340}>
-              <Button
-                variant="outlined"
-                fullWidth
-                startIcon={<GoogleFavicon />}
-                onClick={handleGoogleSignIn}
-                sx={{
-                  background: '#fff',
-                  borderRadius: 2,
-                  fontWeight: 700,
-                  fontSize: '1.1rem',
-                  color: '#23272f',
-                  py: 1.2,
-                  mb: 1.5,
-                  borderColor: '#eee',
-                  boxShadow: 'none',
-                  '&:hover': { background: '#f5f5f5', borderColor: '#ccc' },
-                }}
-              >
-                Continue with Google
-              </Button>
-              <Divider sx={{ my: 1.5, fontWeight: 600 }}>OR</Divider>
-              <Button
-                variant="outlined"
-                fullWidth
-                sx={{
-                  background: '#fff',
-                  borderRadius: 2,
-                  fontWeight: 700,
-                  fontSize: '1.1rem',
-                  color: '#23272f',
-                  py: 1.2,
-                  borderColor: '#eee',
-                  boxShadow: 'none',
-                  '&:hover': { background: '#f5f5f5', borderColor: '#ccc' },
-                }}
-                onClick={() => setEmailMode('form')}
-              >
-                Continue with email / username
-              </Button>
-              <Typography variant="caption" color="text.secondary" mt={2} align="center" display="block">
-                By continuing, you agree to Handy's Terms and Privacy Policy.
-              </Typography>
-            </Box>
-          )}
-          {mode === 'signin' && emailMode === 'form' && (
-            <Box width="100%" maxWidth={340}>
-              <TextField
-                fullWidth
-                label="Email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                sx={{ mb: 2, background: '#fff', borderRadius: 1,
-                  '& .MuiInputBase-input': theme => ({
-                    color: theme.palette.mode === 'dark' ? '#1976d2' : '#23272f',
-                  })
-                }}
-                inputProps={{ style: { padding: '14px 12px' } }}
-              />
-              <TextField
-                fullWidth
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                sx={{ mb: 1, background: '#fff', borderRadius: 1,
-                  '& .MuiInputBase-input': theme => ({
-                    color: theme.palette.mode === 'dark' ? '#1976d2' : '#23272f',
-                  })
-                }}
-                inputProps={{ style: { padding: '14px 12px' } }}
-                InputProps={{
-                  endAdornment: (
-                    <Button
-                      onClick={() => setShowPassword((show) => !show)}
-                      sx={{ minWidth: 0, p: 0, color: '#888' }}
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                    </Button>
-                  ),
-                }}
-              />
-              <Box display="flex" justifyContent="flex-end" mb={2}>
-                <Button variant="text" size="small" sx={{ textTransform: 'none', fontWeight: 500, p: 0, minWidth: 0 }}>
-                  Forgot password?
+                <Button
+                  variant="text"
+                  fullWidth
+                  onClick={() => setMode('signin')}
+                  sx={{ mt: 1, color: '#1976d2', fontWeight: 600, textTransform: 'none' }}
+                >
+                  Already have an account? Sign in
+                </Button>
+                <Button
+                  variant="text"
+                  fullWidth
+                  startIcon={<GoogleFavicon />}
+                  onClick={handleGoogleSignIn}
+                  sx={{ mt: 1, color: '#4285F4', fontWeight: 600, textTransform: 'none' }}
+                >
+                  Continue with Google
                 </Button>
               </Box>
-              {registerError && (
-                <Typography color="error" variant="body2" mb={1}>{registerError}</Typography>
-              )}
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={handleLogin}
-                disabled={registerLoading}
-                sx={{
-                  background: '#111',
-                  color: '#fff',
-                  fontWeight: 700,
-                  fontSize: '1.1rem',
-                  borderRadius: 2,
-                  py: 1.2,
-                  boxShadow: 'none',
-                  '&:hover': { background: '#222' },
-                }}
-              >
-                {registerLoading ? "Signing in..." : "Sign in"}
-              </Button>
-              <Button
-                variant="text"
-                fullWidth
-                startIcon={<GoogleFavicon />}
-                onClick={handleGoogleSignIn}
-                sx={{ mt: 1, color: '#4285F4', fontWeight: 600, textTransform: 'none' }}
-              >
-                Continue with Google
-              </Button>
-            </Box>
-          )}
-          {mode === 'register' && (
-            <Box width="100%" maxWidth={340}>
-              <Typography variant="body2" color="text.secondary" align="center" mb={2}>
-                Already have an account?{' '}
-                <Button variant="text" size="small" onClick={() => setMode('signin')} sx={{ textTransform: 'none', fontWeight: 600, p: 0, minWidth: 0, color: '#1976d2' }}>
-                  Sign in
+            </>
+          ) : (
+            <>
+              <Box width="100%" maxWidth={isMobile ? 1 : 400}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  sx={{ mb: 2 }}
+                  InputProps={{
+                    endAdornment: (
+                      <Button
+                        onClick={() => setShowPassword((show) => !show)}
+                        sx={{ minWidth: 0, p: 0, color: '#888' }}
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      </Button>
+                    ),
+                  }}
+                />
+                {registerError && (
+                  <Typography color="error" variant="body2" mb={1}>{registerError}</Typography>
+                )}
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={handleLogin}
+                  disabled={registerLoading}
+                  sx={{
+                    background: '#111',
+                    color: '#fff',
+                    fontWeight: 700,
+                    fontSize: '1.1rem',
+                    borderRadius: 2,
+                    py: 1.2,
+                    boxShadow: 'none',
+                    '&:hover': { background: '#222' },
+                  }}
+                >
+                  {registerLoading ? "Signing in..." : "Sign in"}
                 </Button>
-              </Typography>
-              <TextField
-                fullWidth
-                label="Email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                sx={{ mb: 2, background: '#fff', borderRadius: 1,
-                  '& .MuiInputBase-input': theme => ({
-                    color: theme.palette.mode === 'dark' ? '#1976d2' : '#23272f',
-                  })
-                }}
-                inputProps={{ style: { padding: '14px 12px' } }}
-              />
-              <TextField
-                fullWidth
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                sx={{ mb: 2, background: '#fff', borderRadius: 1,
-                  '& .MuiInputBase-input': theme => ({
-                    color: theme.palette.mode === 'dark' ? '#1976d2' : '#23272f',
-                  })
-                }}
-                inputProps={{ style: { padding: '14px 12px' } }}
-                InputProps={{
-                  endAdornment: (
-                    <Button
-                      onClick={() => setShowPassword((show) => !show)}
-                      sx={{ minWidth: 0, p: 0, color: '#888' }}
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                    </Button>
-                  ),
-                }}
-              />
-              {registerError && (
-                <Typography color="error" variant="body2" mb={1}>{registerError}</Typography>
-              )}
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={handleRegister}
-                disabled={registerLoading}
-                sx={{
-                  background: '#111',
-                  color: '#fff',
-                  fontWeight: 700,
-                  fontSize: '1.1rem',
-                  borderRadius: 2,
-                  py: 1.2,
-                  boxShadow: 'none',
-                  '&:hover': { background: '#222' },
-                }}
-              >
-                {registerLoading ? "Signing up..." : "Sign up"}
-              </Button>
-              <Button
-                variant="text"
-                fullWidth
-                startIcon={<GoogleFavicon />}
-                onClick={handleGoogleSignIn}
-                sx={{ mt: 1, color: '#4285F4', fontWeight: 600, textTransform: 'none' }}
-              >
-                Continue with Google
-              </Button>
-            </Box>
+                <Button
+                  variant="text"
+                  fullWidth
+                  onClick={() => setMode('register')}
+                  sx={{ mt: 1, color: '#1976d2', fontWeight: 600, textTransform: 'none' }}
+                >
+                  Don't have an account? Sign up
+                </Button>
+                <Button
+                  variant="text"
+                  fullWidth
+                  startIcon={<GoogleFavicon />}
+                  onClick={handleGoogleSignIn}
+                  sx={{ mt: 1, color: '#4285F4', fontWeight: 600, textTransform: 'none' }}
+                >
+                  Continue with Google
+                </Button>
+              </Box>
+            </>
           )}
         </Box>
       </Paper>

@@ -333,53 +333,61 @@ export default function RegisterProvider() {
           ) : mode === 'register' ? (
             <>
               <Box width="100%" maxWidth={isMobile ? 1 : 400}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  sx={{ mb: 2 }}
-                  InputProps={{
-                    endAdornment: (
-                      <Button
-                        onClick={() => setShowPassword((show) => !show)}
-                        sx={{ minWidth: 0, p: 0, color: '#888' }}
-                        tabIndex={-1}
-                      >
-                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                      </Button>
-                    ),
-                  }}
-                />
-                {registerError && (
-                  <Typography color="error" variant="body2" mb={1}>{registerError}</Typography>
-                )}
-                <Button
-                  variant="contained"
-                  fullWidth
-                  onClick={handleRegister}
-                  disabled={registerLoading}
-                  sx={{
-                    background: '#111',
-                    color: '#fff',
-                    fontWeight: 700,
-                    fontSize: '1.1rem',
-                    borderRadius: 2,
-                    py: 1.2,
-                    boxShadow: 'none',
-                    '&:hover': { background: '#222' },
-                  }}
-                >
-                  {registerLoading ? "Signing up..." : "Sign up"}
-                </Button>
+                <form onSubmit={(e) => { e.preventDefault(); handleRegister(); }}>
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                    sx={{ mb: 2 }}
+                    InputProps={{
+                      endAdornment: (
+                        <Button
+                          type="button"
+                          onClick={() => setShowPassword((show) => !show)}
+                          sx={{ minWidth: 0, p: 0, color: '#888' }}
+                          tabIndex={-1}
+                        >
+                          {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        </Button>
+                      ),
+                    }}
+                  />
+                  {registerError && (
+                    <Typography color="error" variant="body2" mb={1}>{registerError}</Typography>
+                  )}
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    type="submit"
+                    disabled={registerLoading}
+                    sx={{
+                      background: '#111',
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: '1.1rem',
+                      borderRadius: 2,
+                      py: 1.2,
+                      boxShadow: 'none',
+                      '&:hover': { background: '#222' },
+                    }}
+                  >
+                    {registerLoading ? "Signing up..." : "Sign up"}
+                  </Button>
+                </form>
                 <Button
                   variant="text"
                   fullWidth
@@ -402,53 +410,61 @@ export default function RegisterProvider() {
           ) : (
             <>
               <Box width="100%" maxWidth={isMobile ? 1 : 400}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  sx={{ mb: 2 }}
-                  InputProps={{
-                    endAdornment: (
-                      <Button
-                        onClick={() => setShowPassword((show) => !show)}
-                        sx={{ minWidth: 0, p: 0, color: '#888' }}
-                        tabIndex={-1}
-                      >
-                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                      </Button>
-                    ),
-                  }}
-                />
-                {registerError && (
-                  <Typography color="error" variant="body2" mb={1}>{registerError}</Typography>
-                )}
-                <Button
-                  variant="contained"
-                  fullWidth
-                  onClick={handleLogin}
-                  disabled={registerLoading}
-                  sx={{
-                    background: '#111',
-                    color: '#fff',
-                    fontWeight: 700,
-                    fontSize: '1.1rem',
-                    borderRadius: 2,
-                    py: 1.2,
-                    boxShadow: 'none',
-                    '&:hover': { background: '#222' },
-                  }}
-                >
-                  {registerLoading ? "Signing in..." : "Sign in"}
-                </Button>
+                <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    required
+                    sx={{ mb: 2 }}
+                    InputProps={{
+                      endAdornment: (
+                        <Button
+                          type="button"
+                          onClick={() => setShowPassword((show) => !show)}
+                          sx={{ minWidth: 0, p: 0, color: '#888' }}
+                          tabIndex={-1}
+                        >
+                          {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        </Button>
+                      ),
+                    }}
+                  />
+                  {registerError && (
+                    <Typography color="error" variant="body2" mb={1}>{registerError}</Typography>
+                  )}
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    type="submit"
+                    disabled={registerLoading}
+                    sx={{
+                      background: '#111',
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: '1.1rem',
+                      borderRadius: 2,
+                      py: 1.2,
+                      boxShadow: 'none',
+                      '&:hover': { background: '#222' },
+                    }}
+                  >
+                    {registerLoading ? "Signing in..." : "Sign in"}
+                  </Button>
+                </form>
                 <Button
                   variant="text"
                   fullWidth

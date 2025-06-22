@@ -8,16 +8,19 @@ import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import { getDatabase } from "firebase/database";
 import { getFirestore } from "firebase/firestore";
+import { getConfig } from "./appConfig";
 
-// Firebase configuration using environment variables
+const config = getConfig();
+
+// Firebase configuration using global config
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  apiKey: config.FIREBASE_API_KEY,
+  appId: config.FIREBASE_APP_ID,
+  authDomain: config.FIREBASE_AUTH_DOMAIN,
+  messagingSenderId: config.FIREBASE_MESSAGING_SENDER_ID,
+  projectId: config.FIREBASE_PROJECT_ID,
+  storageBucket: config.FIREBASE_STORAGE_BUCKET,
+  databaseURL: config.FIREBASE_DATABASE_URL,
 };
 
 // Initialize Firebase app

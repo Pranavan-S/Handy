@@ -11,13 +11,16 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { fetchServiceRequestsBasedOnService } from "@store/serviceRequestsSlice";
 import { ThemeProvider, createTheme, CssBaseline, Snackbar, Alert, CircularProgress } from "@mui/material";
 import { fetchProviderOffers } from "./store/providerOffersSlice";
+import { getConfig } from "@config/appConfig";
+
+const config = getConfig();
 
 /**
  * Theme and WebSocket constants
  */
 const THEME_KEY = "handy_theme_mode";
-const SOCKET_IO_BASE_URL = import.meta.env.VITE_SOCKET_IO_BASE_URL || "http://localhost:5000";
-const SOCKET_IO_PATH = import.meta.env.VITE_SOCKET_IO_PATH || "/socket.io";
+const SOCKET_IO_BASE_URL = config.SOCKET_IO_BASE_URL;
+const SOCKET_IO_PATH = config.SOCKET_IO_PATH;
 const socket = io(SOCKET_IO_BASE_URL, {
   autoConnect: false,
   path: SOCKET_IO_PATH,

@@ -1,6 +1,5 @@
-/// <reference types="vite/client" />
-
-interface AppConfig {
+// Global configuration types
+export interface AppConfig {
   API_BASE_URL: string;
   SOCKET_IO_BASE_URL: string;
   SOCKET_IO_PATH: string;
@@ -22,3 +21,5 @@ declare global {
     APP_CONFIG: AppConfig;
   }
 }
+
+export {};

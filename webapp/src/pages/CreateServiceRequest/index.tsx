@@ -19,6 +19,9 @@ import { ArrowBack, PhotoCamera, Delete as DeleteIcon, CloudUpload } from "@mui/
 import apiService from "@utils/apiService";
 import CONSTANTS from "@config/constants";
 import { setUser } from "@store/userSlice";
+import { getConfig } from "@config/appConfig";
+
+const config = getConfig();
 
 const SERVICE_TYPES = [
   { value: "electricity", label: "Electricity", id: 1 },
@@ -86,16 +89,13 @@ const CreateServiceRequest: React.FC = () => {
   const uploadImageToCloudinary = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+    formData.append("upload_preset", config.CLOUDINARY_UPLOAD_PRESET);
 
     try {
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${config.CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: formData,
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
